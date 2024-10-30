@@ -3,41 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Secure Ad Point System</title>
+    <title>Ad Points System</title>
     <script src='//niphaumeenses.net/vignette.min.js' data-zone='8442747' data-sdk='show_8442747'></script>
-    <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            font-family: Arial, sans-serif;
-        }
-
-        #kzQX_23FJ {
-            padding: 10px 20px;
-            font-size: 18px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        #kzQX_23FJ:hover {
-            background-color: #218838;
-        }
-
-        #pnts_YF7kz {
-            margin-top: 20px;
-            font-size: 24px;
-        }
-    </style>
 </head>
 <body>
-    <button id="kzQX_23FJ">Show Ad</button>
-    <div id="pnts_YF7kz">Points: 0</div>
-    <script src="s.js"></script>
+    <h1>Ad Points System</h1>
+    <button id="showAd">Show Ad</button>
+    
+    <script>
+        document.getElementById('showAd').onclick = function() {
+            show_8442747().then(() => {
+                // Replace 'your_telegram_username' with the actual Telegram username
+                const username = 'your_telegram_username'; // Replace this with the actual Telegram username
+
+                // Send request to add points
+                fetch('http://localhost:5000/addPoints', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ username })
+                })
+                .then(response => response.json())
+                .then(data => {
+                    alert(`You have seen the ad! Your points: ${data.points}`);
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                });
+            });
+        };
+    </script>
 </body>
 </html>
