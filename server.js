@@ -1,79 +1,50 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
-const cors = require('cors');
-const path = require('path'); 
 
-// MongoDB URI
-const uri = 'mongodb+srv://shuaibhasan017:cpLJrxdiYSCS0hN5@cluster0.rpgvp.mongodb.net/AdPointsSystem?retryWrites=true&w=majority';
+// MongoDB Atlas connection
+const MONGODB_URI = "mongodb+srv://shuaibhasan017:STP4gcl56oHKgQeg@cluster0.mongodb.net/AdPointSystem?retryWrites=true&w=majority";
+mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log("MongoDB connected"))
+    .catch(err => console.error("MongoDB connection error:", err));
 
-// Connect to MongoDB
-mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log('MongoDB Connected'))
-    .catch(err => console.error('MongoDB connection error:', err));
-
-// Create a schema and model for UserPoints
-const userPointsSchema = new mongoose.Schema({
-    username: { type: String, required: true },
-    telegramUsername: { type: String, required: true }, // Add Telegram username
+// Define User schema
+const userSchema = new mongoose.Schema({
+    username: { type: String, required: true, unique: true },
     points: { type: Number, default: 0 }
 });
 
-const UserPoints = mongoose.model('UserPoints', userPointsSchema);
+// Create User model
+const User = mongoose.model('User', userSchema);
 
-// Initialize Express app
 const app = express();
-app.use(cors());
 app.use(bodyParser.json());
 
-// Serve static files from the 'public' directory
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Endpoint to add points
-app.post('/addPoints', async (req, res) => {
-    const { username, telegramUsername } = req.body; // Get both usernames
+// API endpoint to update points
+app.post('/update-points', async (req, res) => {
+    const { username } = req.body;
 
     try {
-        // Check if user already exists
-        let user = await UserPoints.findOne({ username });
-
-        // If user does not exist, create a new one
+        // Check if user exists
+        let user = await User.findOne({ username });
+        
         if (!user) {
-            user = new UserPoints({ username, telegramUsername });
+            // Create new user if not exists
+            user = new User({ username });
         }
 
-        // Increment points
+        // Update points
         user.points += 1;
         await user.save();
 
-        res.json({ message: 'Points added!', points: user.points, telegramUsername }); // Send back Telegram username
+        res.json({ success: true, points: user.points });
     } catch (error) {
-        res.status(500).json({ message: 'Error adding points', error });
+        res.json({ success: false, message: 'Error updating points.' });
     }
-});
-
-// Endpoint to get user points
-app.get('/getPoints', async (req, res) => {
-    const username = req.query.username; // Get the username from query params
-    try {
-        const user = await UserPoints.findOne({ username });
-        if (user) {
-            res.json({ points: user.points });
-        } else {
-            res.status(404).json({ message: 'User not found' });
-        }
-    } catch (error) {
-        res.status(500).json({ message: 'Error fetching user points', error });
-    }
-});
-
-// Create a basic GET route for the root path
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));  // Serve the HTML file
 });
 
 // Start the server
-const PORT = process.env.PORT || 5000;
+const PORT = 3000;
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    console.log(`Server is running on http://localhost:${PORT}`);
 });
