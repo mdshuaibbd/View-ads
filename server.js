@@ -5,7 +5,7 @@ const cors = require('cors');
 const path = require('path'); 
 
 // MongoDB URI
-const uri = 'mongodb+srv://shuaibhasan017:STP4gcl56oHKgQeg@cluster0.mongodb.net/AdPointSystem?retryWrites=true&w=majority ';
+const uri = 'mongodb+srv://shuaibhasan017:STP4gcl56oHKgQeg@cluster0.mongodb.net/AdPointSystem?retryWrites=true&w=majority';
 
 // Connect to MongoDB
 mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -19,15 +19,18 @@ const userPointsSchema = new mongoose.Schema({
     points: { type: Number, default: 0 }
 });
 
-const UserPoints = mongoose.model('AdPointsSystem', AdPointsSystemSchema);
+// Keeping the model name as 'AdPointsSystem'
+const UserPoints = mongoose.model('AdPointsSystem', userPointsSchema);
 
 // Initialize Express app
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
 
-// Serve static files from the 'public' directory
-app.use(express.static(path.join(__dirname, 'public')));
+// Serve index.html directly from the root
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));  // Serve index.html from the root directory
+});
 
 // Endpoint to add points
 app.post('/addPoints', async (req, res) => {
@@ -62,11 +65,6 @@ app.get('/getPoints', async (req, res) => {
     } catch (error) {
         res.status(500).json({ message: 'Error fetching user points', error });
     }
-});
-
-// Serve index.html at root
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 // Start the server
