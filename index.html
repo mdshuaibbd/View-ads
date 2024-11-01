@@ -13,12 +13,17 @@
             margin-top: 20px;
             font-weight: bold;
         }
+        #telegramDisplay {
+            margin-top: 10px;
+            font-weight: normal;
+        }
     </style>
 </head>
 <body>
     <h1>Welcome to the Ads Points System</h1>
     <button onclick="addPoints()">View Ad</button>  <!-- Button to add points -->
     <p id="pointsDisplay">Current Points: 0</p>  <!-- Display for current points -->
+    <p id="telegramDisplay">Telegram Username: N/A</p> <!-- Display for Telegram username -->
 
     <script>
         async function addPoints() {
@@ -46,11 +51,14 @@
             const response = await fetch(`https://view-ads.vercel.app/getPoints?username=${username}`); // Vercel URL
             const data = await response.json();
             const pointsDisplay = document.getElementById('pointsDisplay');
-            
+            const telegramDisplay = document.getElementById('telegramDisplay');
+
             if (response.ok) { // Check if the response is OK
                 pointsDisplay.innerText = `Current Points: ${data.points}`;  // Display current points
+                telegramDisplay.innerText = `Telegram Username: ${username}`; // Display Telegram username
             } else {
                 pointsDisplay.innerText = 'Error fetching points'; // Display error message
+                telegramDisplay.innerText = 'Telegram Username: N/A'; // Reset Telegram username on error
             }
         }
     </script>
