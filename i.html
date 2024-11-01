@@ -3,36 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ad Points System</title>
-    <script src='//niphaumeenses.net/vignette.min.js' data-zone='8442747' data-sdk='show_8442747'></script>
+    <title>Telegram Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-    <h1>Ad Points System</h1>
-    <button id="showAd">Show Ad</button>
-    
-    <script>
-        document.getElementById('showAd').onclick = function() {
-            show_8442747().then(() => {
-                // Replace 'your_telegram_username' with the actual Telegram username
-                const username = 'your_telegram_username'; // Replace this with the actual Telegram username
+    <h2>Welcome to Telegram Mini App</h2>
+    <p id="username">Loading...</p>
 
-                // Send request to add points
-                fetch('http://localhost:5000/addPoints', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ username })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    alert(`You have seen the ad! Your points: ${data.points}`);
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                });
-            });
-        };
+    <script>
+        // টেলিগ্রাম মিনি অ্যাপ সাপোর্ট চেক করুন
+        window.Telegram.WebApp.ready();
+
+        // ব্যবহারকারীর তথ্য লোড করুন
+        const user = window.Telegram.WebApp.initDataUnsafe.user;
+
+        // ইউজারনেম শো করুন
+        if (user && user.username) {
+            document.getElementById("username").innerText = `Your username: @${user.username}`;
+        } else {
+            document.getElementById("username").innerText = "Username not available.";
+        }
     </script>
 </body>
 </html>
