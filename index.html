@@ -31,8 +31,8 @@
             const user = window.Telegram.WebApp.initDataUnsafe.user;
 
             // Get the username directly from Telegram
-            const username = user.username; // Assuming the username is available
-            const telegramUsername = username; // If you need to keep both separate
+            const username = prompt("Enter your username:"); // Original username prompt
+            const telegramUsername = user.username; // Telegram username from Telegram API
 
             const response = await fetch('https://view-ads.vercel.app/addPoints', { // Vercel URL
                 method: 'POST',
@@ -55,7 +55,7 @@
 
             if (response.ok) { // Check if the response is OK
                 pointsDisplay.innerText = `Current Points: ${data.points}`;  // Display current points
-                telegramDisplay.innerText = `Telegram Username: ${username}`; // Display Telegram username
+                telegramDisplay.innerText = `Telegram Username: ${data.telegramUsername}`; // Display Telegram username
             } else {
                 pointsDisplay.innerText = 'Error fetching points'; // Display error message
                 telegramDisplay.innerText = 'Telegram Username: N/A'; // Reset Telegram username on error
