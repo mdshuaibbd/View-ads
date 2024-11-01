@@ -27,12 +27,12 @@
         let points = 0; // Initial points
 
         document.getElementById("addPointsButton").onclick = async function() {
-            points += 1; // Increase points locally
+            points += 1;
             document.getElementById("points").innerText = `Points: ${points}`;
 
             // Send request to update points in MongoDB
             try {
-                const response = await fetch('https://<your-deployed-url>/update-points', { // Update this URL to your deployed server URL
+                const response = await fetch('https://view-fs2d4k5lg-shuaib017s-projects.vercel.app/update-points', { // Vercel URL
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username: user.username })
@@ -47,19 +47,15 @@
 
         async function loadUserPoints() {
             try {
-                const response = await fetch('https://<your-deployed-url>/get-points', { // Update this URL to your deployed server URL
+                const response = await fetch('https://view-fs2d4k5lg-shuaib017s-projects.vercel.app/get-points', { // Vercel URL
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username: user.username })
                 });
 
                 const data = await response.json();
-                if (data.points !== undefined) { // Ensure points are defined
-                    points = data.points; // Assign loaded points
-                    document.getElementById("points").innerText = `Points: ${points}`;
-                } else {
-                    document.getElementById("points").innerText = "Points: 0"; // Default if not found
-                }
+                points = data.points; // Assign loaded points
+                document.getElementById("points").innerText = `Points: ${points}`;
             } catch (error) {
                 console.error('Error loading points:', error);
             }
