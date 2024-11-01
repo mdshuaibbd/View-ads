@@ -3,62 +3,61 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ads Points System</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        #pointsDisplay {
-            margin-top: 20px;
-            font-weight: bold;
-        }
-        #telegramDisplay {
-            margin-top: 10px;
-            font-weight: normal;
-        }
-    </style>
+    <title>Telegram Mini App</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
-    <h1>Welcome to the Ads Points System</h1>
-    <button onclick="addPoints()">View Ad</button>  <!-- Button to add points -->
-    <p id="pointsDisplay">Current Points: 0</p>  <!-- Display for current points -->
-    <p id="telegramDisplay">Telegram Username: N/A</p> <!-- Display for Telegram username -->
+    <h2>Welcome to Telegram Mini App</h2>
+    <p id="username">Loading...</p>
+    <button id="addPointsButton" style="display: none;">Add Point</button>
+    <p id="points">Points: 0</p>
 
     <script>
-        async function addPoints() {
-            // Telegram user data retrieval
-            const user = window.Telegram.WebApp.initDataUnsafe.user;
+        window.Telegram.WebApp.ready();
+        const user = window.Telegram.WebApp.initDataUnsafe.user;
 
-            // Get the username directly from Telegram
-            const username = prompt("Enter your username:"); // Original username prompt
-            const telegramUsername = user.username; // Telegram username from Telegram API
-
-            const response = await fetch('https://view-ads.vercel.app/addPoints', { // Vercel URL
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ username, telegramUsername })
-            });
-
-            const data = await response.json();
-            alert(data.message + ' Your Points: ' + data.points + ' Telegram: ' + data.telegramUsername);
-            updatePointsDisplay(username);  // Update points display
+        if (user && user.username) {
+            document.getElementById("username").innerText = `Your username: @${user.username}`;
+            document.getElementById("addPointsButton").style.display = 'block';
+            loadUserPoints(); // Load points when the username is available
+        } else {
+            document.getElementById("username").innerText = "Username not available.";
         }
 
-        async function updatePointsDisplay(username) {
-            const response = await fetch(`https://view-ads.vercel.app/getPoints?username=${username}`); // Vercel URL
-            const data = await response.json();
-            const pointsDisplay = document.getElementById('pointsDisplay');
-            const telegramDisplay = document.getElementById('telegramDisplay');
+        let points = 0; // Initial points
 
-            if (response.ok) { // Check if the response is OK
-                pointsDisplay.innerText = `Current Points: ${data.points}`;  // Display current points
-                telegramDisplay.innerText = `Telegram Username: ${data.telegramUsername}`; // Display Telegram username
-            } else {
-                pointsDisplay.innerText = 'Error fetching points'; // Display error message
-                telegramDisplay.innerText = 'Telegram Username: N/A'; // Reset Telegram username on error
+        document.getElementById("addPointsButton").onclick = async function() {
+            points += 1;
+            document.getElementById("points").innerText = `Points: ${points}`;
+
+            // Send request to update points in MongoDB
+            try {
+                const response = await fetch('http://localhost:3000/update-points', { // Change this URL to your deployed server URL
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user.username })
+                });
+
+                const data = await response.json();
+                console.log('Updated user data:', data);
+            } catch (error) {
+                console.error('Error updating points:', error);
+            }
+        };
+
+        async function loadUserPoints() {
+            try {
+                const response = await fetch('http://localhost:3000/get-points', { // Change this URL to your deployed server URL
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: user.username })
+                });
+
+                const data = await response.json();
+                points = data.points; // Assign loaded points
+                document.getElementById("points").innerText = `Points: ${points}`;
+            } catch (error) {
+                console.error('Error loading points:', error);
             }
         }
     </script>
