@@ -23,7 +23,8 @@ const userSchema = new mongoose.Schema({
     points: { type: Number, default: 0 }
 });
 
-const User = mongoose.model('User', userSchema);
+// Use the specified collection name 'UserInfo'
+const User = mongoose.model('UserInfo', userSchema); // Change here
 
 // Update points endpoint
 app.post('/update-points', async (req, res) => {
