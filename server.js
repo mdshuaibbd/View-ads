@@ -5,7 +5,7 @@ const cors = require('cors');
 const path = require('path'); 
 
 // MongoDB URI
-const uri = 'mongodb+srv://your_mongo_uri_here';
+const uri = 'mongodb+srv://shuaibhasan017:STP4gcl56oHKgQeg@cluster0.mongodb.net/AdPointSystem?retryWrites=true&w=majority ';
 
 // Connect to MongoDB
 mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
@@ -19,7 +19,7 @@ const userPointsSchema = new mongoose.Schema({
     points: { type: Number, default: 0 }
 });
 
-const UserPoints = mongoose.model('UserPoints', userPointsSchema);
+const UserPoints = mongoose.model('AdPointsSystem', AdPointsSystemSchema);
 
 // Initialize Express app
 const app = express();
