@@ -1,60 +1,79 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const app = express();
+const bodyParser = require('body-parser');
 const cors = require('cors');
-require('dotenv').config();
+const path = require('path'); 
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+// MongoDB URI
+const uri = 'mongodb+srv://shuaibhasan017:cpLJrxdiYSCS0hN5@cluster0.rpgvp.mongodb.net/AdPointsSystem?retryWrites=true&w=majority';
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log("MongoDB connected"))
-    .catch(err => console.error(err));
+// Connect to MongoDB
+mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log('MongoDB Connected'))
+    .catch(err => console.error('MongoDB connection error:', err));
 
-// User Schema
-const userSchema = new mongoose.Schema({
-    username: String,
+// Create a schema and model for UserPoints
+const userPointsSchema = new mongoose.Schema({
+    username: { type: String, required: true },
+    telegramUsername: { type: String, required: true }, // Add Telegram username
     points: { type: Number, default: 0 }
-}, { collection: 'UserInfo' }); // Specify collection name
+});
 
-const User = mongoose.model('User', userSchema);
+const UserPoints = mongoose.model('UserPoints', userPointsSchema);
 
-// Update Points API
-app.post('/update-points', async (req, res) => {
-    const { username } = req.body;
+// Initialize Express app
+const app = express();
+app.use(cors());
+app.use(bodyParser.json());
+
+// Serve static files from the 'public' directory
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Endpoint to add points
+app.post('/addPoints', async (req, res) => {
+    const { username, telegramUsername } = req.body; // Get both usernames
+
     try {
-        const user = await User.findOneAndUpdate(
-            { username: username },
-            { $inc: { points: 1 } },
-            { new: true, upsert: true } // upsert: true creates a new document if it doesn't exist
-        );
-        res.status(200).json(user);
+        // Check if user already exists
+        let user = await UserPoints.findOne({ username });
+
+        // If user does not exist, create a new one
+        if (!user) {
+            user = new UserPoints({ username, telegramUsername });
+        }
+
+        // Increment points
+        user.points += 1;
+        await user.save();
+
+        res.json({ message: 'Points added!', points: user.points, telegramUsername }); // Send back Telegram username
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Error updating points" });
+        res.status(500).json({ message: 'Error adding points', error });
     }
 });
 
-// Get Points API
-app.post('/get-points', async (req, res) => {
-    const { username } = req.body;
+// Endpoint to get user points
+app.get('/getPoints', async (req, res) => {
+    const username = req.query.username; // Get the username from query params
     try {
-        const user = await User.findOne({ username: username });
+        const user = await UserPoints.findOne({ username });
         if (user) {
-            res.status(200).json({ points: user.points });
+            res.json({ points: user.points });
         } else {
-            res.status(404).json({ message: "User not found" });
+            res.status(404).json({ message: 'User not found' });
         }
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Error fetching points" });
+        res.status(500).json({ message: 'Error fetching user points', error });
     }
+});
+
+// Create a basic GET route for the root path
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));  // Serve the HTML file
 });
 
 // Start the server
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+    console.log(`Server is running on port ${PORT}`);
 });
