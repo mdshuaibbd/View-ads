@@ -1,60 +1,64 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const app = express();
-const cors = require('cors');
+const bodyParser = require('body-parser');
 require('dotenv').config();
 
+const app = express();
+const port = process.env.PORT || 3000;
+
+// MongoDB URI from .env file
+const mongoURI = process.env.MONGODB_URI;
+
 // Middleware
-app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json());
 
-// MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-    .then(() => console.log("MongoDB connected"))
-    .catch(err => console.error(err));
+// Connect to MongoDB
+mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log('MongoDB connected...'))
+    .catch(err => console.error('MongoDB connection error:', err));
 
-// User Schema
+// User schema
 const userSchema = new mongoose.Schema({
-    username: String,
+    username: { type: String, required: true, unique: true },
     points: { type: Number, default: 0 }
 });
 
 const User = mongoose.model('User', userSchema);
 
-// Update Points API
+// Update points endpoint
 app.post('/update-points', async (req, res) => {
     const { username } = req.body;
     try {
-        const user = await User.findOneAndUpdate(
-            { username: username },
-            { $inc: { points: 1 } },
-            { new: true, upsert: true } // upsert: true creates a new document if it doesn't exist
-        );
-        res.status(200).json(user);
+        let user = await User.findOne({ username });
+        if (!user) {
+            user = new User({ username, points: 0 }); // Create new user if not found
+        }
+        user.points += 1; // Increment points
+        await user.save();
+        res.json({ points: user.points });
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Error updating points" });
+        console.error('Error updating points:', error);
+        res.status(500).json({ message: 'Error updating points' });
     }
 });
 
-// Get Points API
+// Get points endpoint
 app.post('/get-points', async (req, res) => {
     const { username } = req.body;
     try {
-        const user = await User.findOne({ username: username });
+        const user = await User.findOne({ username });
         if (user) {
-            res.status(200).json({ points: user.points });
+            res.json({ points: user.points });
         } else {
-            res.status(404).json({ message: "User not found" });
+            res.json({ points: 0 }); // Return 0 points if user not found
         }
     } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: "Error fetching points" });
+        console.error('Error fetching points:', error);
+        res.status(500).json({ message: 'Error fetching points' });
     }
 });
 
-// Start the server
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
+// Start server
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
 });
