@@ -5,61 +5,49 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Telegram Mini App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; }
+        input { margin: 5px; }
+    </style>
 </head>
 <body>
     <h2>Welcome to Telegram Mini App</h2>
-    <p id="username">Loading...</p>
-    <button id="addPointsButton" style="display: none;">Add Point</button>
+    
+    <input type="text" id="usernameInput" placeholder="Enter your username" />
+    <button id="addPointsButton">Add Point</button>
+    
     <p id="points">Points: 0</p>
 
     <script>
-        window.Telegram.WebApp.ready();
-        const user = window.Telegram.WebApp.initDataUnsafe.user;
-
-        if (user && user.username) {
-            document.getElementById("username").innerText = `Your username: @${user.username}`;
-            document.getElementById("addPointsButton").style.display = 'block';
-            loadUserPoints(); // Load points when the username is available
-        } else {
-            document.getElementById("username").innerText = "Username not available.";
-        }
-
         let points = 0; // Initial points
 
         document.getElementById("addPointsButton").onclick = async function() {
-            points += 1;
-            document.getElementById("points").innerText = `Points: ${points}`;
+            const username = document.getElementById("usernameInput").value;
+
+            if (!username) {
+                alert("Please enter a username.");
+                return;
+            }
 
             // Send request to update points in MongoDB
             try {
-                const response = await fetch('http://localhost:3000/update-points', { // Change this URL to your deployed server URL
+                const response = await fetch('http://localhost:3000/update-points', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: user.username })
+                    body: JSON.stringify({ username })
                 });
 
                 const data = await response.json();
-                console.log('Updated user data:', data);
+                if (data.success) {
+                    points += 1; // Increment points
+                    document.getElementById("points").innerText = `Points: ${points}`;
+                } else {
+                    alert(data.message); // Show error message
+                }
             } catch (error) {
                 console.error('Error updating points:', error);
             }
         };
-
-        async function loadUserPoints() {
-            try {
-                const response = await fetch('http://localhost:3000/get-points', { // Change this URL to your deployed server URL
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: user.username })
-                });
-
-                const data = await response.json();
-                points = data.points; // Assign loaded points
-                document.getElementById("points").innerText = `Points: ${points}`;
-            } catch (error) {
-                console.error('Error loading points:', error);
-            }
-        }
     </script>
 </body>
 </html>
