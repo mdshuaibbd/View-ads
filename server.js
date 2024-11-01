@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 
 // MongoDB Atlas connection
-const MONGODB_URI = "mongodb+srv://shuaibhasan017:STP4gcl56oHKgQeg@cluster0.mongodb.net/AdPointSystem?retryWrites=true&w=majority";
+const MONGODB_URI = "mongodb+srv://shuaibhasan017:STP4gcl56oHKgQeg@cluster0.mongodb.net/AdPointsSystem?retryWrites=true&w=majority";
 mongoose.connect(MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
     .then(() => console.log("MongoDB connected"))
     .catch(err => console.error("MongoDB connection error:", err));
@@ -14,8 +14,8 @@ const userSchema = new mongoose.Schema({
     points: { type: Number, default: 0 }
 });
 
-// Create User model
-const User = mongoose.model('User', userSchema);
+// Create User model for the UserInfo collection
+const User = mongoose.model('UserInfo', userSchema);
 
 const app = express();
 app.use(bodyParser.json());
