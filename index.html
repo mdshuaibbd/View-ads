@@ -1,24 +1,67 @@
 <html>
 <head>
     <script src='//doakosteceet.net/vignette.min.js' data-zone='8442747' data-sdk='show_8442747'></script>
+    <style>
+        #startButton {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+
+        #countdown {
+            font-size: 16px;
+            margin-top: 10px;
+        }
+    </style>
 </head>
 <body>
+    <!-- এড চালু করার বাটন -->
+    <button id="startButton" onclick="startAd()">Start Ad</button>
+    <div id="countdown"></div>
+
     <script>
-        // এড দেখানোর ফাংশন
-        function showAd() {
+        let adInterval;
+
+        // এড দেখানোর এবং ৩ সেকেন্ডের কাউন্টডাউন শো করার ফাংশন
+        function startAd() {
+            document.getElementById('startButton').style.display = 'none'; // বাটন লুকানো
+            showAdWithCountdown(); // এড দেখানো এবং কাউন্টডাউন শুরু
+        }
+
+        function showAdWithCountdown() {
             show_8442747().then(() => {
-                // ইউজার এড দেখলে এড দেখানোর ফাংশন ৩ সেকেন্ড পর পুনরায় কল হবে
-                alert('আপনি এড দেখেছেন!');
-                setTimeout(showAd, 3000); // ৩ সেকেন্ডের বিরতি
+                // এড দেখার পরে ৩ সেকেন্ডের কাউন্টডাউন দেখানো
+                let countdown = 3;
+                document.getElementById('countdown').innerText = 'Next ad in: ' + countdown + ' seconds';
+
+                adInterval = setInterval(() => {
+                    countdown--;
+                    if (countdown > 0) {
+                        document.getElementById('countdown').innerText = 'Next ad in: ' + countdown + ' seconds';
+                    } else {
+                        clearInterval(adInterval);
+                        showAdWithCountdown(); // ৩ সেকেন্ড পরে আবার এড দেখানো
+                    }
+                }, 1000);
             }).catch(error => {
                 console.error("Ad loading failed:", error);
-                // যদি এড লোড করতে কোনো সমস্যা হয় তবে আবার চেষ্টা করবে ৩ সেকেন্ড পর
-                setTimeout(showAd, 3000);
+                resetButton(); // ত্রুটি হলে বাটন আবার দেখাবে
             });
         }
 
-        // পেজ লোড হলে প্রথমবার এড দেখানো শুরু হবে
-        window.onload = showAd;
+        // পেজ থেকে বের হলে বা রিফ্রেশ করলে বাটন আবার দেখানো হবে
+        function resetButton() {
+            clearInterval(adInterval); // যেকোনো চলমান টাইমার বন্ধ করা
+            document.getElementById('startButton').style.display = 'inline-block';
+            document.getElementById('countdown').innerText = '';
+        }
+
+        // পেজ লোড হলে রিসেট করা
+        window.onbeforeunload = resetButton;
     </script>
 </body>
 </html>
